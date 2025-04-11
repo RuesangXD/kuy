@@ -1,190 +1,50 @@
--- GPT Hub (UI + ฟีเจอร์การตั้งค่า)
+-- สร้าง GUI
+local player = game.Players.LocalPlayer
+local screenGui = Instance.new("ScreenGui")
+screenGui.Parent = player:WaitForChild("PlayerGui")
 
-local library = loadstring(game:GetObjects("rbxassetid://7657867786")[1].Source)()
-local Wait = library.subs.Wait -- ฟังก์ชันที่รอให้ GUI ไม่ถูกยกเลิก
+-- สร้างปุ่ม Teleport
+local teleportButton = Instance.new("TextButton")
+teleportButton.Size = UDim2.new(0, 200, 0, 50)
+teleportButton.Position = UDim2.new(0, 10, 0, 10)
+teleportButton.Text = "Teleport Player"
+teleportButton.Parent = screenGui
+teleportButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)  -- สีแดง
+teleportButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 
--- สร้างหน้าต่าง GUI
-local GPTHub = library:CreateWindow({
-    Name = "GPT Hub",
-    Themeable = {
-        Info = "Discord Server: VzYTJ7Y"
-    }
-})
+-- สร้างปุ่ม Fake Explosion
+local explosionButton = Instance.new("TextButton")
+explosionButton.Size = UDim2.new(0, 200, 0, 50)
+explosionButton.Position = UDim2.new(0, 10, 0, 70)
+explosionButton.Text = "Fake Explosion"
+explosionButton.Parent = screenGui
+explosionButton.BackgroundColor3 = Color3.fromRGB(0, 0, 255)  -- สีน้ำเงิน
+explosionButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 
--- สร้างแท็บทั่วไป
-local GeneralTab = GPTHub:CreateTab({
-    Name = "General"
-})
-
--- ฟีเจอร์ Farming
-local FarmingSection = GeneralTab:CreateSection({
-    Name = "Farming"
-})
-
-FarmingSection:AddToggle({
-    Name = "EXP Grinder",
-    Flag = "FarmingSection_EXPGrinder"
-})
-
-FarmingSection:AddToggle({
-    Name = "Trick Spammer",
-    Flag = "FarmingSection_TrickSpammer",
-    Keybind = 1,
-    Callback = print
-})
-
-FarmingSection:AddSlider({
-    Name = "Trick Rate",
-    Flag = "FarmingSection_TrickRate",
-    Value = 0.15,
-    Precise = 2,
-    Min = 0,
-    Max = 1
-})
-
-FarmingSection:AddToggle({
-    Name = "TP To Coins",
-    Flag = "FarmingSection_TPCoins"
-})
-
-FarmingSection:AddToggle({
-    Name = "Collect Coins",
-    Flag = "FarmingSection_CollectCoins",
-    Callback = print
-})
-
-FarmingSection:AddSlider({
-    Name = "Coin Distance",
-    Flag = "FarmingSection_CoinDistance",
-    Value = 175,
-    Min = 0,
-    Max = 200,
-    Format = function(Value)
-        if Value == 0 then
-            return "Collection Distance: Infinite"
-        else
-            return "Collection Distance: " .. tostring(Value)
-        end
+-- ฟังก์ชัน Teleport เมื่อคลิก
+teleportButton.MouseButton1Click:Connect(function()
+    local character = player.Character
+    if character then
+        -- ส่งผู้เล่นไปยังตำแหน่งสุ่ม
+        local newPosition = Vector3.new(math.random(-100, 100), 10, math.random(-100, 100))
+        character:SetPrimaryPartCFrame(CFrame.new(newPosition))
+        print(player.Name .. " ถูกส่งไปยังตำแหน่งใหม่!")
     end
-})
+end)
 
--- ฟีเจอร์ Board Control
-local BoardControlSection = GeneralTab:CreateSection({
-    Name = "Board Control"
-})
-
-BoardControlSection:AddToggle({
-    Name = "Anti Trip/Ragdoll",
-    Flag = "BoardControlSection_AntiTripRagdoll",
-    Callback = print
-})
-
-BoardControlSection:AddToggle({
-    Name = "No Wear & Tear",
-    Flag = "BoardControlSection_NoWearTear"
-})
-
-BoardControlSection:AddToggle({
-    Name = "No Trick Cooldown",
-    Flag = "BoardControlSection_NoTrickCooldown",
-    Callback = print
-})
-
-BoardControlSection:AddToggle({
-    Name = "Extend Combo Timeout",
-    Flag = "BoardControlSection_ExtendComboTimeout"
-})
-
-BoardControlSection:AddSlider({
-    Name = "Timeout Extension",
-    Flag = "BoardControlSection_CoinDistance",
-    Value = 3,
-    Min = 0,
-    Max = 20,
-    Format = function(Value)
-        if Value == 0 then
-            return "Combo Timeout: Never"
-        else
-            return "Combo Timeout: " .. tostring(Value) .. "s"
-        end
+-- ฟังก์ชัน Fake Explosion เมื่อคลิก
+explosionButton.MouseButton1Click:Connect(function()
+    local character = player.Character
+    if character then
+        -- สร้างระเบิดปลอม
+        local explosion = Instance.new("Explosion")
+        explosion.Position = character.HumanoidRootPart.Position
+        explosion.BlastRadius = 0  -- ไม่มีแรงระเบิด
+        explosion.BlastPressure = 0
+        explosion.Parent = workspace
+        print("สร้างระเบิดปลอม!")
     end
-})
+end)
 
--- ฟีเจอร์ Misc
-local MiscSection = GeneralTab:CreateSection({
-    Name = "Misc",
-    Side = "Right"
-})
-
-MiscSection:AddToggle({
-    Name = "Unlock Gamepasses",
-    Flag = "MiscSection_UnlockGamepasses",
-    Callback = print
-})
-
-MiscSection:AddToggle({
-    Name = "Auto Compete",
-    Flag = "MiscSection_AutoCompete",
-    Callback = print
-})
-
-MiscSection:AddButton({
-    Name = "Repair Board",
-    Callback = function()
-        print("Fixed")
-    end
-})
-
-MiscSection:AddKeybind({
-    Name = "Test Key",
-    Callback = print
-})
-
-MiscSection:AddToggle({
-    Name = "Test Toggle/Key",
-    Keybind = {
-        Mode = "Dynamic" -- การใช้งานโหมด 'hold' ถ้าผู้ใช้กดปุ่มเกิน 0.65 วินาที
-    },
-    Callback = print
-})
-
--- ฟีเจอร์ Fun Cosmetics
-local FunSection = GeneralTab:CreateSection({
-    Name = "Fun Cosmetics"
-})
-
-FunSection:AddToggle({
-    Name = "Ragdoll Assumes Flight",
-    Flag = "FunSection_AssumesFlight"
-})
-
-FunSection:AddToggle({
-    Name = "Ragdoll On Player Collision",
-    Flag = "FunSection_RagdollOnPlayerCollision"
-})
-
-FunSection:AddToggle({
-    Name = "Un-Ragdoll When Motionless",
-    Flag = "FunSection_UnRagdollWhenMotionless"
-})
-
-FunSection:AddToggle({
-    Name = "Extend Ragdoll Duration",
-    Flag = "FunSection_ExtendRagdollDuration"
-})
-
-FunSection:AddSlider({
-    Name = "Coin Distance",
-    Flag = "FarmingSection_CoinDistance",
-    Value = 4,
-    Min = 0,
-    Max = 60,
-    Textbox = true,
-    Format = function(Value)
-        if Value == 0 then
-            return "Ragdoll Extension: Indefinite"
-        else
-            return "Ragdoll Extension: " .. tostring(Value) .. "s"
-        end
-    end
-})
+-- สร้างการแสดงผล GUI
+screenGui.Enabled = true
