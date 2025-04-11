@@ -1,117 +1,190 @@
--- SwingbatX Hub (Fling, Fly, Speed, ESP, etc.)
+-- GPT Hub (UI + ฟีเจอร์การตั้งค่า)
 
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
-local UIS = game:GetService("UserInputService")
-local RunService = game:GetService("RunService")
+local library = loadstring(game:GetObjects("rbxassetid://7657867786")[1].Source)()
+local Wait = library.subs.Wait -- ฟังก์ชันที่รอให้ GUI ไม่ถูกยกเลิก
 
--- GUI Setup
-local screenGui = Instance.new("ScreenGui", game.CoreGui)
-screenGui.Name = "SwingbatXHub"
+-- สร้างหน้าต่าง GUI
+local GPTHub = library:CreateWindow({
+    Name = "GPT Hub",
+    Themeable = {
+        Info = "Discord Server: VzYTJ7Y"
+    }
+})
 
-local frame = Instance.new("Frame", screenGui)
-frame.Size = UDim2.new(0, 250, 0, 400)
-frame.Position = UDim2.new(0.05, 0, 0.2, 0)
-frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-frame.BackgroundTransparency = 0.5
-frame.BorderSizePixel = 0
-frame.ClipsDescendants = true
-frame.AnchorPoint = Vector2.new(0, 0)
+-- สร้างแท็บทั่วไป
+local GeneralTab = GPTHub:CreateTab({
+    Name = "General"
+})
 
-local uicorner = Instance.new("UICorner", frame)
-uicorner.CornerRadius = UDim.new(0, 12)
+-- ฟีเจอร์ Farming
+local FarmingSection = GeneralTab:CreateSection({
+    Name = "Farming"
+})
 
-local title = Instance.new("TextLabel", frame)
-title.Text = "SwingbatX Hub"
-title.Size = UDim2.new(1, 0, 0.1, 0)
-title.BackgroundTransparency = 1
-title.TextColor3 = Color3.fromRGB(255, 255, 255)
-title.Font = Enum.Font.GothamBold
-title.TextSize = 20
+FarmingSection:AddToggle({
+    Name = "EXP Grinder",
+    Flag = "FarmingSection_EXPGrinder"
+})
 
-local toggleBtn = Instance.new("TextButton", frame)
-toggleBtn.Size = UDim2.new(0.8, 0, 0.1, 0)
-toggleBtn.Position = UDim2.new(0.1, 0, 0.2, 0)
-toggleBtn.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
-toggleBtn.Text = "Enable Fling"
-toggleBtn.Font = Enum.Font.Gotham
-toggleBtn.TextSize = 18
-toggleBtn.TextColor3 = Color3.new(1,1,1)
+FarmingSection:AddToggle({
+    Name = "Trick Spammer",
+    Flag = "FarmingSection_TrickSpammer",
+    Keybind = 1,
+    Callback = print
+})
 
-local corner = Instance.new("UICorner", toggleBtn)
-corner.CornerRadius = UDim.new(0, 10)
+FarmingSection:AddSlider({
+    Name = "Trick Rate",
+    Flag = "FarmingSection_TrickRate",
+    Value = 0.15,
+    Precise = 2,
+    Min = 0,
+    Max = 1
+})
 
--- Variables for Features
-local flingEnabled = false
-local flyEnabled = false
-local speedEnabled = false
-local infiniteJumpEnabled = false
-local espEnabled = false
+FarmingSection:AddToggle({
+    Name = "TP To Coins",
+    Flag = "FarmingSection_TPCoins"
+})
 
--- Fling Function
-local function enableFling()
-    local touchedConn
-    touchedConn = HumanoidRootPart.Touched:Connect(function(hit)
-        local otherChar = hit:FindFirstAncestorOfClass("Model")
-        if otherChar and otherChar ~= Character and otherChar:FindFirstChild("HumanoidRootPart") then
-            local bodyVelocity = Instance.new("BodyVelocity")
-            bodyVelocity.Velocity = (otherChar.HumanoidRootPart.Position - HumanoidRootPart.Position).Unit * 100 + Vector3.new(0, 50, 0)
-            bodyVelocity.MaxForce = Vector3.new(1e5, 1e5, 1e5)
-            bodyVelocity.Parent = otherChar.HumanoidRootPart
-            game.Debris:AddItem(bodyVelocity, 0.3)
+FarmingSection:AddToggle({
+    Name = "Collect Coins",
+    Flag = "FarmingSection_CollectCoins",
+    Callback = print
+})
+
+FarmingSection:AddSlider({
+    Name = "Coin Distance",
+    Flag = "FarmingSection_CoinDistance",
+    Value = 175,
+    Min = 0,
+    Max = 200,
+    Format = function(Value)
+        if Value == 0 then
+            return "Collection Distance: Infinite"
+        else
+            return "Collection Distance: " .. tostring(Value)
         end
-    end)
-    return touchedConn
-end
-
--- Fly Function
-local function enableFly()
-    local char = LocalPlayer.Character
-    local hrp = char:FindFirstChild("HumanoidRootPart")
-    local bv = Instance.new("BodyVelocity")
-    bv.Name = "FlyVelocity"
-    bv.MaxForce = Vector3.new(1e5, 1e5, 1e5)
-    bv.Velocity = Vector3.new(0, 0, 0)
-    bv.Parent = hrp
-
-    local flyConn
-    flyConn = RunService.RenderStepped:Connect(function()
-        local dir = Vector3.new()
-        if UIS:IsKeyDown(Enum.KeyCode.W) then dir = dir + workspace.CurrentCamera.CFrame.LookVector end
-        if UIS:IsKeyDown(Enum.KeyCode.S) then dir = dir - workspace.CurrentCamera.CFrame.LookVector end
-        if UIS:IsKeyDown(Enum.KeyCode.A) then dir = dir - workspace.CurrentCamera.CFrame.RightVector end
-        if UIS:IsKeyDown(Enum.KeyCode.D) then dir = dir + workspace.CurrentCamera.CFrame.RightVector end
-        if UIS:IsKeyDown(Enum.KeyCode.Space) then dir = dir + Vector3.new(0, 1, 0) end
-        if UIS:IsKeyDown(Enum.KeyCode.LeftShift) then dir = dir - Vector3.new(0, 1, 0) end
-        bv.Velocity = dir.Unit * 80
-    end)
-    return flyConn
-end
-
--- Toggle Button
-toggleBtn.MouseButton1Click:Connect(function()
-    flingEnabled = not flingEnabled
-    toggleBtn.Text = flingEnabled and "Disable Fling" or "Enable Fling"
-    if flingEnabled then
-        enableFling()
-    else
-        -- Disable Fling
     end
-end)
+})
 
--- Fly Button
-local flyBtn = toggleBtn:Clone()
-flyBtn.Position = UDim2.new(0.1, 0, 0.4, 0)
-flyBtn.Text = "Fly: Off"
-flyBtn.Parent = frame
-flyBtn.MouseButton1Click:Connect(function()
-    flyEnabled = not flyEnabled
-    flyBtn.Text = flyEnabled and "Fly: On" or "Fly: Off"
-    if flyEnabled then
-        enableFly()
-    else
-        -- Disable Fly
+-- ฟีเจอร์ Board Control
+local BoardControlSection = GeneralTab:CreateSection({
+    Name = "Board Control"
+})
+
+BoardControlSection:AddToggle({
+    Name = "Anti Trip/Ragdoll",
+    Flag = "BoardControlSection_AntiTripRagdoll",
+    Callback = print
+})
+
+BoardControlSection:AddToggle({
+    Name = "No Wear & Tear",
+    Flag = "BoardControlSection_NoWearTear"
+})
+
+BoardControlSection:AddToggle({
+    Name = "No Trick Cooldown",
+    Flag = "BoardControlSection_NoTrickCooldown",
+    Callback = print
+})
+
+BoardControlSection:AddToggle({
+    Name = "Extend Combo Timeout",
+    Flag = "BoardControlSection_ExtendComboTimeout"
+})
+
+BoardControlSection:AddSlider({
+    Name = "Timeout Extension",
+    Flag = "BoardControlSection_CoinDistance",
+    Value = 3,
+    Min = 0,
+    Max = 20,
+    Format = function(Value)
+        if Value == 0 then
+            return "Combo Timeout: Never"
+        else
+            return "Combo Timeout: " .. tostring(Value) .. "s"
+        end
     end
-end)
+})
+
+-- ฟีเจอร์ Misc
+local MiscSection = GeneralTab:CreateSection({
+    Name = "Misc",
+    Side = "Right"
+})
+
+MiscSection:AddToggle({
+    Name = "Unlock Gamepasses",
+    Flag = "MiscSection_UnlockGamepasses",
+    Callback = print
+})
+
+MiscSection:AddToggle({
+    Name = "Auto Compete",
+    Flag = "MiscSection_AutoCompete",
+    Callback = print
+})
+
+MiscSection:AddButton({
+    Name = "Repair Board",
+    Callback = function()
+        print("Fixed")
+    end
+})
+
+MiscSection:AddKeybind({
+    Name = "Test Key",
+    Callback = print
+})
+
+MiscSection:AddToggle({
+    Name = "Test Toggle/Key",
+    Keybind = {
+        Mode = "Dynamic" -- การใช้งานโหมด 'hold' ถ้าผู้ใช้กดปุ่มเกิน 0.65 วินาที
+    },
+    Callback = print
+})
+
+-- ฟีเจอร์ Fun Cosmetics
+local FunSection = GeneralTab:CreateSection({
+    Name = "Fun Cosmetics"
+})
+
+FunSection:AddToggle({
+    Name = "Ragdoll Assumes Flight",
+    Flag = "FunSection_AssumesFlight"
+})
+
+FunSection:AddToggle({
+    Name = "Ragdoll On Player Collision",
+    Flag = "FunSection_RagdollOnPlayerCollision"
+})
+
+FunSection:AddToggle({
+    Name = "Un-Ragdoll When Motionless",
+    Flag = "FunSection_UnRagdollWhenMotionless"
+})
+
+FunSection:AddToggle({
+    Name = "Extend Ragdoll Duration",
+    Flag = "FunSection_ExtendRagdollDuration"
+})
+
+FunSection:AddSlider({
+    Name = "Coin Distance",
+    Flag = "FarmingSection_CoinDistance",
+    Value = 4,
+    Min = 0,
+    Max = 60,
+    Textbox = true,
+    Format = function(Value)
+        if Value == 0 then
+            return "Ragdoll Extension: Indefinite"
+        else
+            return "Ragdoll Extension: " .. tostring(Value) .. "s"
+        end
+    end
+})
